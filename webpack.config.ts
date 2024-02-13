@@ -14,7 +14,7 @@ const config = (env: TEnvVariables): webpack.Configuration => {
 
     return {
         mode: env.mode ?? "development",
-        entry: path.resolve(__dirname, "src", "index.ts"),
+        entry: path.resolve(__dirname, "src", "index.tsx"),
         output: {
             path: path.resolve(__dirname, "build"),
             filename: "build.[contenthash].js",
