@@ -1,6 +1,7 @@
 import path from "path";
 import webpack from "webpack";
 import HtmlWebpackPlugin from "html-webpack-plugin";
+import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import type { Configuration as DevServerConfiguration } from "webpack-dev-server";
 
 type TMode = "production" | "development";
@@ -25,6 +26,10 @@ const config = (env: TEnvVariables): webpack.Configuration => {
                 template: path.resolve(__dirname, "public", "index.html"),
             }),
             ...(isDev ? [new webpack.ProgressPlugin()] : []),
+            new MiniCssExtractPlugin({
+                filename: "css/[name].[contenthash].css",
+                chunkFilename: "css/[name].[contenthash].css",
+            }),
         ],
         module: {
             rules: [
@@ -33,10 +38,40 @@ const config = (env: TEnvVariables): webpack.Configuration => {
                     use: "ts-loader",
                     exclude: /node_modules/,
                 },
+                {
+                    test: /\.css$/i,
+                    use: [MiniCssExtractPlugin.loader, "css-loader"],
+                },
+                {
+                    test: /\.s(a|c)ss$/i,
+                    use: [
+                        MiniCssExtractPlugin.loader,
+                        {
+                            loader: "css-loader",
+                            options: {
+                                modules: {
+                                    localIdentName: isDev
+                                        ? "[path][name]__[local]"
+                                        : "[hash:base64:8]",
+                                },
+                            },
+                        },
+                        {
+                            loader: "sass-loader",
+                            options: {
+                                sourceMap: true,
+                                sassOptions: {
+                                    modules: true,
+                                    outputStyle: "compressed",
+                                },
+                            },
+                        },
+                    ],
+                },
             ],
         },
         resolve: {
-            extensions: [".tsx", ".ts", ".js"],
+            extensions: [".tsx", ".ts", ".js", ".scss"],
         },
         devtool: isDev ? "inline-source-map" : false,
         devServer: isDev
